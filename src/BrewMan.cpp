@@ -20,11 +20,11 @@ BrewMan::BrewMan()
 	m_stateStack.registerState<SyncState>(States::Sync);
 	m_stateStack.registerState<BrowseState>(States::Browse);
 //	m_stateStack.pushState(States::Browse);
-//	m_stateStack.pushState(States::Loading);
 	m_stateStack.pushState(States::Sync);
-//	m_stateStack.pushState(States::Title);
+	m_stateStack.pushState(States::Title);
+	m_stateStack.pushState(States::Loading);
 
-	textFPS.setColor(cpp3ds::Color::Red);
+	textFPS.setFillColor(cpp3ds::Color::Red);
 	textFPS.setCharacterSize(20);
 }
 

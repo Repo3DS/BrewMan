@@ -202,10 +202,10 @@ void Button::ensureUpdate() const
 
 		if (m_active) {
 			NinePatch::setColor(m_backgroundActiveColor);
-			m_text.setColor(m_textActiveColor);
+			m_text.setFillColor(m_textActiveColor);
 		} else {
 			NinePatch::setColor(m_backgroundColor);
-			m_text.setColor(m_textColor);
+			m_text.setFillColor(m_textColor);
 		}
 
 		m_needsUpdate = false;

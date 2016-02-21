@@ -25,6 +25,8 @@ public:
 private:
 	void setItemIndex(int index);
 	void setCurrentApp(AppItem* app);
+	void setCurrentScreenshot(int screenshotIndex);
+	void loadApp();
 
 private:
 	AppList m_appList;
@@ -35,10 +37,30 @@ private:
 
 	float m_appListPositionX;
 
+	int m_currentScreenshot;
+	util3ds::TweenSprite m_screenshotTop;
+	util3ds::TweenSprite m_screenshotBottom;
+	util3ds::TweenText m_arrowLeft;
+	util3ds::TweenText m_arrowRight;
+	util3ds::TweenText m_close;
+
 	// Bottom screen
-	cpp3ds::Transform m_transform;
 	cpp3ds::Sprite m_icon;
-	cpp3ds::Text m_textOrderAlpha;
+	cpp3ds::Text m_textTitle;
+	cpp3ds::Text m_textDescription;
+	float m_descriptionVelocity;
+	cpp3ds::RectangleShape m_fadeShape;
+	cpp3ds::View m_descriptionView;
+
+	cpp3ds::RectangleShape m_screenshotsBackground;
+	cpp3ds::Text m_textScreenshotsEmpty;
+
+	cpp3ds::Thread m_loadThread;
+	std::vector<std::unique_ptr<cpp3ds::Texture>> m_screenshotTextures;
+	std::vector<std::unique_ptr<cpp3ds::Sprite>> m_screenshots;
+
+	util3ds::TweenText m_textOrderAlpha;
+	util3ds::TweenText m_textDownload;
 };
 
 } // namespace BrewMan

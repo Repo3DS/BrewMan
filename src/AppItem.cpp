@@ -46,19 +46,19 @@ AppItem::AppItem()
 
 	m_titleText.setCharacterSize(12);
 	m_titleText.setPosition(57.f, 3.f);
-	m_titleText.setColor(cpp3ds::Color(50,50,50));
+	m_titleText.setFillColor(cpp3ds::Color(50,50,50));
 
 	m_shortDescriptionText.setCharacterSize(10);
 	m_shortDescriptionText.setPosition(56.f, 20.f);
-	m_shortDescriptionText.setColor(cpp3ds::Color(100,100,100));
+	m_shortDescriptionText.setFillColor(cpp3ds::Color(100,100,100));
 
 	m_filesizeText.setCharacterSize(10);
 	m_filesizeText.setPosition(56.f, 37.f);
-	m_filesizeText.setColor(cpp3ds::Color(150,150,150));
+	m_filesizeText.setFillColor(cpp3ds::Color(150,150,150));
 
 	m_authorText.setCharacterSize(10);
 	m_authorText.setPosition(56.f, 37.f);
-	m_authorText.setColor(cpp3ds::Color(120,120,120));
+	m_authorText.setFillColor(cpp3ds::Color(120,120,120));
 
 	setSize(194.f, 56.f);
 }
@@ -167,6 +167,16 @@ const std::string &AppItem::getDescription() const
 	return m_description;
 }
 
+void AppItem::setLongDescription(const std::string &description)
+{
+	m_longDescription = description;
+}
+
+const std::string &AppItem::getLongDescription() const
+{
+	return m_longDescription.empty() ? m_description : m_longDescription;
+}
+
 void AppItem::setFilename(const std::string &filename)
 {
 	m_filename = filename;
@@ -175,6 +185,16 @@ void AppItem::setFilename(const std::string &filename)
 const std::string &AppItem::getFilename() const
 {
 	return m_filename;
+}
+
+void AppItem::setFileMD5(const std::string &md5)
+{
+	m_fileMD5 = md5;
+}
+
+const std::string &AppItem::getFileMD5() const
+{
+	return m_fileMD5;
 }
 
 void AppItem::setIcon(const cpp3ds::Texture* texture)
@@ -196,7 +216,12 @@ void AppItem::loadFromYAML(const std::string &filename)
 		setVersion(m_yaml["version"].as<std::string>());
 		setDescription(m_yaml["description"].as<std::string>());
 		setFilename(m_yaml["file"].as<std::string>());
+		setFileMD5(m_yaml["file-md5"].as<std::string>());
 		setFilesize(m_yaml["filesize"].as<size_t>());
+		if (m_yaml["long-description"])
+			setLongDescription(m_yaml["long-description"].as<std::string>());
+		if (m_yaml["screenshots"])
+			setScreenshots(m_yaml["screenshots"].as<std::vector<std::string>>());
 	}
 	catch(YAML::Exception& e)
 	{
@@ -259,6 +284,16 @@ size_t AppItem::getFilesize() const
 const cpp3ds::Texture *AppItem::getIcon() const
 {
 	return m_icon.getTexture();
+}
+
+void AppItem::setScreenshots(const std::vector<std::string> &screenshots)
+{
+	m_screenshots = screenshots;
+}
+
+const std::vector<std::string> &AppItem::getScreenshots() const
+{
+	return m_screenshots;
 }
 
 } // namespace BrewMan

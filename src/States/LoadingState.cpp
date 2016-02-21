@@ -15,7 +15,7 @@ LoadingState::LoadingState(StateStack& stack, Context& context)
 	m_background.setFillColor(cpp3ds::Color(0, 0, 0, 50));
 
 	m_icon.setFont(AssetManager<cpp3ds::Font>::get("fonts/fontawesome.ttf"));
-	m_icon.setColor(cpp3ds::Color(110,110,110,255));
+	m_icon.setFillColor(cpp3ds::Color(110,110,110,255));
 	m_icon.setCharacterSize(80);
 	m_icon.setString(L"\uf110");
 	cpp3ds::FloatRect textRect = m_icon.getLocalBounds();
@@ -52,19 +52,11 @@ bool LoadingState::processEvent(const cpp3ds::Event& event)
 	{
 		if (event.key.code == cpp3ds::Keyboard::Select) {
 			requestStackClear();
-			return true;
-		}
-
-		if (cpp3ds::Service::isEnabled(cpp3ds::Network)) {
-//			requestStackPop();
-//			requestStackPush(States::ServerSelect);
-		} else {
-//			getContext().transition.message = _("No internet connection.\nConnect to internet and retry.");
-//			requestStackPush(States::TransitionMessage);
+			return false;
 		}
 	}
 
-	return true;
+	return false;
 }
 
 } // namespace BrewMan

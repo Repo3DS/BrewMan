@@ -33,8 +33,14 @@ public:
 	void setDescription(const std::string &description);
 	const std::string &getDescription() const;
 
+	void setLongDescription(const std::string &description);
+	const std::string &getLongDescription() const;
+
 	void setFilename(const std::string &filename);
 	const std::string &getFilename() const;
+
+	void setFileMD5(const std::string &md5);
+	const std::string &getFileMD5() const;
 
 	void setFilesize(size_t filesize);
 	size_t getFilesize() const;
@@ -45,6 +51,9 @@ public:
 
 	const cpp3ds::Vector2f &getSize() const;
 	const cpp3ds::Texture* getIcon() const;
+
+	void setScreenshots(const std::vector<std::string> &screenshots);
+	const std::vector<std::string>& getScreenshots() const;
 
 	void setProgress(float progress);
 	float getProgress() const;
@@ -80,8 +89,11 @@ private:
 	std::string m_author;
 	std::string m_version;
 	std::string m_description;
+	std::string m_longDescription;
 	std::string m_filename;
+	std::string m_fileMD5;
 	size_t m_filesize;
+	std::vector<std::string> m_screenshots;
 
 	bool m_installed;
 };

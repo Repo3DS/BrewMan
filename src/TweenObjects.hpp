@@ -202,7 +202,7 @@ protected:
 
 
 typedef TweenColorTransformable<cpp3ds::Sprite> TweenSprite;
-typedef TweenColorTransformable<cpp3ds::Text> TweenText;
+typedef TweenShape<cpp3ds::Text> TweenText;
 
 typedef TweenShape<cpp3ds::RectangleShape> TweenRectangleShape;
 typedef TweenShape<cpp3ds::CircleShape> TweenCircleShape;
