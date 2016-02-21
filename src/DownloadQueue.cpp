@@ -43,14 +43,21 @@ void DownloadQueue::addDownload(AppItem* app)
 			count = 0;
 			clock.restart();
 		}
+
 		return true;
 	},
-	[=]
+	[=]() mutable
 	{
 		app->setProgress(0.f);
-		Notification::spawn(_("%s Downloaded.", app->getTitle().c_str()));
+
 		Installer installer(app, destination);
-		installer.run();
+		if (installer.isValid())
+		{
+			installer.run();
+			Notification::spawn(app->getTitle() + " install finished.");
+		}
+		else
+			Notification::spawn("File validation failed: " + app->getTitle());
 	});
 
 	Notification::spawn(_("Queued %s for install.", app->getTitle().c_str()));

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cpp3ds/System/FileSystem.hpp>
 #include <archive_entry.h>
+#include <mbedtls/md5.h>
 #include "Installer.hpp"
 
 
@@ -49,6 +50,9 @@ Installer::Installer(AppItem *app, const std::string& filename)
 
 void Installer::run()
 {
+	if (!isValid())
+		return;
+
 	struct archive *a;
 	struct archive *ext;
 	struct archive_entry *entry;
@@ -110,6 +114,43 @@ void Installer::run()
 	archive_read_free(a);
 	archive_write_close(ext);
 	archive_write_free(ext);
+}
+
+// Verify filesize and checksum supplied by app config file
+bool Installer::isValid()
+{
+	unsigned char buf[1024];
+	FILE *file;
+	size_t len;
+
+	std::stringstream md5sum;
+	unsigned char md5bytes[16];
+	mbedtls_md5_context md5;
+
+	bool ret = true;
+
+	mbedtls_md5_init(&md5);
+	mbedtls_md5_starts(&md5);
+
+	file = fopen(cpp3ds::FileSystem::getFilePath(m_filename).c_str(), "rb");
+	while(len = fread(buf, 1, sizeof(buf), file))
+		mbedtls_md5_update(&md5, buf, len);
+
+	mbedtls_md5_finish(&md5, md5bytes);
+
+	md5sum << std::hex;
+	for (int i = 0; i < sizeof(md5bytes); ++i)
+		md5sum << static_cast<int>(md5bytes[i]);
+
+	if (ftell(file) != m_app->getFilesize())
+		ret = false;
+	if (md5sum.str() != m_app->getFileMD5())
+		ret = false;
+
+	fclose(file);
+	mbedtls_md5_free(&md5);
+
+	return ret;
 }
 
 } // namespace BrewMan

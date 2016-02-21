@@ -10,7 +10,7 @@ namespace BrewMan {
 class Installer {
 public:
 	Installer(AppItem* app, const std::string& filename);
-
+	bool isValid();
 	void run();
 
 private:
