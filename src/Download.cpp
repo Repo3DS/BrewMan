@@ -8,6 +8,7 @@ namespace BrewMan {
 Download::Download(const std::string &url, const std::string &destination)
 : m_thread(&Download::run, this)
 , m_destination(destination)
+, m_cancelFlag(false)
 {
 	setUrl(url);
 }
@@ -65,7 +66,11 @@ void Download::run()
 			}
 		}
 
-		return !m_cancelFlag && m_onData(data, len, processed, response);
+		bool ret = !m_cancelFlag;
+		if (ret && m_onData)
+			ret = m_onData(data, len, processed, response);
+
+		return ret;
 	};
 
 	// Follow all redirects
@@ -81,7 +86,8 @@ void Download::run()
 		fwrite(&m_buffer[0], sizeof(char), m_buffer.size(), m_file);
 	fclose(m_file);
 
-	m_onFinish();
+	if (m_onFinish)
+		m_onFinish();
 }
 
 
