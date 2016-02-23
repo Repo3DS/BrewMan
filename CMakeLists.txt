@@ -46,6 +46,7 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/States/BrowseState.cpp
 	${PROJECT_SOURCE_DIR}/src/States/SyncState.cpp
 	${TWEEN_ENGINE_SOURCE}
+	${PROJECT_SOURCE_DIR}/src/boot.c
 )
 
 # Use either nihstro or picasso for your shader scripts
@@ -55,8 +56,8 @@ FILE(GLOB_RECURSE SHADER_FILES ${PROJECT_SOURCE_DIR}/res/romfs/shaders/[^.]*.vsh
 ##################################################
 # Don't usually need to change anything below
 ##################################################
-set(CPP3DS_ARM_FLAGS "-g -O2 -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft")
-set(CPP3DS_EMU_FLAGS "-g -O0")
+set(CPP3DS_ARM_FLAGS "-O2 -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft")
+set(CPP3DS_EMU_FLAGS "-O0")
 
 set(CPP3DS_ARM_LIBS cpp3ds-window cpp3ds-network cpp3ds-graphics cpp3ds-audio cpp3ds-system citro3d git2 test mbedtls mbedx509 mbedcrypto ctru freetype png z vorbisenc vorbisfile vorbis ogg yaml-cpp archive bz2 lzma)
 set(CPP3DS_EMU_LIBS cpp3ds-emu sfml-graphics sfml-window sfml-system sfml-audio openal GLEW GL jpeg freetype vorbisenc vorbisfile vorbis ogg git2 mbedtls mbedx509 mbedcrypto yaml-cpp archive)

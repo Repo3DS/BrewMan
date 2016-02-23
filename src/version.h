@@ -1,0 +1,6 @@
+#ifndef BREWMAN_VERSION_H
+#define BREWMAN_VERSION_H
+
+#define BREWMAN_VERSION "1.0"
+
+#endif // BREWMAN_VERSION_H
