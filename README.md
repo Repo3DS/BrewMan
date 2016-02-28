@@ -4,7 +4,7 @@ Homebrew installer and manager for the Nintendo 3DS. Currently supports only 3ds
 
 # Installation
 
-Download and extract the [latest release](releases/latest) to the root of the SD card. The program *must* be located at `/3ds/BrewMan/BrewMan.3dsx` or it will not function properly (and it will warn you accordingly).
+Download and extract the [latest release](https://github.com/Repo3DS/BrewMan/releases/latest) to the root of the SD card. The program *must* be located at `/3ds/BrewMan/BrewMan.3dsx` or it will not function properly (and it will warning you accordingly).
 
 ### Credit & Thanks
 
