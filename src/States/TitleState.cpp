@@ -3,6 +3,7 @@
 #include <cpp3ds/Window/Window.hpp>
 #include <cpp3ds/System/I18n.hpp>
 #include <cpp3ds/System/Service.hpp>
+#include "../version.h"
 
 using namespace TweenEngine;
 using namespace util3ds;
@@ -12,6 +13,13 @@ namespace BrewMan {
 TitleState::TitleState(StateStack& stack, Context& context)
 : State(stack, context)
 {
+	m_textVersion.setString(BREWMAN_VERSION);
+	m_textVersion.setCharacterSize(12);
+	m_textVersion.setFillColor(cpp3ds::Color::White);
+	m_textVersion.setOutlineColor(cpp3ds::Color(0, 0, 0, 100));
+	m_textVersion.setOutlineThickness(1.f);
+	m_textVersion.setPosition(318.f - m_textVersion.getLocalBounds().width, 222.f);
+
 	m_logoTexture.loadFromFile("images/logo.png");
 	m_logo.setTexture(m_logoTexture, true);
 	m_logo.setColor(cpp3ds::Color::Transparent);
@@ -60,7 +68,7 @@ void TitleState::renderTopScreen(cpp3ds::Window& window)
 
 void TitleState::renderBottomScreen(cpp3ds::Window& window)
 {
-	// Nothing
+	window.draw(m_textVersion);
 }
 
 bool TitleState::update(float delta)

@@ -22,6 +22,7 @@ public:
 private:
 	cpp3ds::Texture m_logoTexture;
 	cpp3ds::Texture m_robotTexture;
+	cpp3ds::Text m_textVersion;
 	util3ds::TweenSprite m_logo;
 	util3ds::TweenSprite m_robot;
 
