@@ -8,6 +8,7 @@
 #include <TweenEngine/TweenManager.h>
 #include <git2/oid.h>
 #include <cpp3ds/System/Thread.hpp>
+#include <cpp3ds/System/Clock.hpp>
 
 #define REPO_DIR "sdmc:/3ds/BrewMan/repo"
 
@@ -27,10 +28,15 @@ public:
 	void sync();
 
 private:
+	bool autoUpdate();
+	void setStatus(const std::string& message);
 	static int find_master(const char *ref_name, const char *remote_url, const git_oid *oid, unsigned int is_merge, void *payload);
 
 	static git_oid m_git_oid;
 	cpp3ds::Thread m_thread;
+	cpp3ds::Clock m_timer;
+	util3ds::TweenText m_textStatus;
+	TweenEngine::TweenManager m_tweenManager;
 };
 
 } // namespace BrewMan
