@@ -4,39 +4,17 @@
 #include "AssetManager.hpp"
 #include "AppItem.hpp"
 
-namespace {
-
-	cpp3ds::Texture& getMissingIconTexture()
-	{
-		static cpp3ds::Texture texture;
-		if (texture.getSize().x == 0)
-			texture.loadFromFile("images/missing-icon.png");
-		return texture;
-	}
-
-}
-
 
 namespace BrewMan
 {
 
-// Static members
-cpp3ds::Texture AppItem::m_backgroundTexture;
-cpp3ds::Texture AppItem::m_backgroundSelectedTexture;
-
 AppItem::AppItem()
-: m_progress(0.f)
-, m_installed(false)
+: m_installed(false)
 {
-	if (m_backgroundTexture.getSize().x == 0)
-		m_backgroundTexture.loadFromFile("images/itembg.9.png");
-	if (m_backgroundSelectedTexture.getSize().x == 0)
-		m_backgroundSelectedTexture.loadFromFile("images/itembg-selected.9.png");
-
 	deselect();
 
 	m_icon.setSize(cpp3ds::Vector2f(48.f, 48.f));
-	m_icon.setTexture(&getMissingIconTexture(), true);
+	m_icon.setTexture(&AssetManager<cpp3ds::Texture>::get("images/missing-icon.png"), true);
 	m_icon.setPosition(4.f, 4.f);
 	m_icon.setOutlineThickness(1.f);
 	m_icon.setFillColor(cpp3ds::Color(180,180,180));
@@ -78,8 +56,6 @@ void AppItem::draw(cpp3ds::RenderTarget &target, cpp3ds::RenderStates states) co
 	target.draw(m_titleText, states);
 	target.draw(m_filesizeText, states);
 	target.draw(m_authorText, states);
-	if (m_progress > 0.f)
-		target.draw(m_progressBar, states);
 }
 
 void AppItem::setSize(float width, float height)
@@ -87,10 +63,8 @@ void AppItem::setSize(float width, float height)
 	m_size.x = width;
 	m_size.y = height;
 
-//	m_background.setPadding(3.f, 3.f, 3.f, 3.f);
 	m_background.setContentSize(m_size.x + m_background.getPadding().width - m_background.getTexture()->getSize().x + 2.f,
 								m_size.y + m_background.getPadding().height - m_background.getTexture()->getSize().y + 2.f);
-	setProgress(m_progress); // Resize progress bar
 }
 
 const cpp3ds::Vector2f& AppItem::getSize() const
@@ -231,27 +205,16 @@ void AppItem::loadFromYAML(const std::string &filename)
 
 void AppItem::select()
 {
-	m_background.setTexture(&m_backgroundSelectedTexture);
+	m_background.setTexture(&AssetManager<cpp3ds::Texture>::get("images/itembg-selected.9.png"));
 	m_background.setColor(cpp3ds::Color(255, 255, 255, 200));
 	m_icon.setOutlineThickness(2.f);
 }
 
 void AppItem::deselect()
 {
-	m_background.setTexture(&m_backgroundTexture);
+	m_background.setTexture(&AssetManager<cpp3ds::Texture>::get("images/itembg.9.png"));
 	m_background.setColor(cpp3ds::Color(255, 255, 255, 80));
 	m_icon.setOutlineThickness(1.f);
-}
-
-void AppItem::setProgress(float progress)
-{
-	m_progress = progress;
-	m_progressBar.setSize(cpp3ds::Vector2f(m_progress * m_size.x, m_size.y));
-}
-
-float AppItem::getProgress() const
-{
-	return m_progress;
 }
 
 void AppItem::setInstalled(bool installed)

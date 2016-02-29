@@ -1,11 +1,11 @@
 #ifndef BOOT_H
 #define BOOT_H
 
-#ifndef EMULATION
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef EMULATION
 
 #include <3ds.h>
 //#include "scanner.h"
@@ -18,14 +18,14 @@ bool isNinjhax2(void);
 //int bootApp(char* executablePath, executableMetadata_s* em, char* arg);
 int bootApp(const char *executablePath, const char *arg);
 
+#else
+
+int bootApp(const char *executablePath, const char *arg);
+
+#endif // !EMULATION
+
 #ifdef __cplusplus
 }
 #endif
-
-#else
-
-int bootApp(const char *executablePath, const char *arg) {}
-
-#endif // !EMULATION
 
 #endif // BOOT_H

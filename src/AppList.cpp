@@ -7,16 +7,8 @@
 #include <functional>
 #include <iostream>
 #include "AppList.hpp"
+#include "Util.hpp"
 
-namespace {
-
-static bool fileExists(const char *filename)
-{
-	struct stat buffer;
-	return stat(cpp3ds::FileSystem::getFilePath(filename).c_str(), &buffer) == 0;
-}
-
-}
 
 namespace BrewMan {
 
@@ -53,11 +45,11 @@ void AppList::refresh()
 			snprintf(configNameBuf, sizeof(configNameBuf), "%s%s/config.yml", m_directory.c_str(), entry->d_name);
 			snprintf(iconNameBuf, sizeof(iconNameBuf), "%s%s/icon.png", m_directory.c_str(), entry->d_name);
 
-			if (fileExists(configNameBuf))
+			if (pathExists(configNameBuf))
 			{
 				AppItem item;
 
-				if (fileExists(iconNameBuf))
+				if (pathExists(iconNameBuf))
 				{
 					cpp3ds::Texture* icon = new cpp3ds::Texture();
 					if (icon->loadFromFile(iconNameBuf))
@@ -71,6 +63,10 @@ void AppList::refresh()
 
 				item.loadFromYAML(cpp3ds::FileSystem::getFilePath(configNameBuf));
 				item.setDirectory(entry->d_name);
+
+				snprintf(configNameBuf, sizeof(configNameBuf), "sdmc:/3ds/BrewMan/installed/%s.list", entry->d_name);
+				item.setInstalled(pathExists(configNameBuf));
+
 				m_list.push_back(item);
 			}
 		}

@@ -2,9 +2,11 @@
 #include "SyncState.hpp"
 #include "../Notification.hpp"
 #include "../AssetManager.hpp"
+#include "../boot.h"
+#include "../Util.hpp"
+#include "../Installer.hpp"
 #include <TweenEngine/Tween.h>
 #include <cpp3ds/Window/Window.hpp>
-#include <sys/stat.h>
 #include <iostream>
 #include <cpp3ds/System/I18n.hpp>
 #include <cpp3ds/System/FileSystem.hpp>
@@ -20,26 +22,32 @@ BrowseState::BrowseState(StateStack& stack, Context& context)
 , m_currentScreenshot(0)
 , m_descriptionVelocity(0.f)
 , m_loadThread(&BrowseState::loadApp, this)
+, m_tabs(cpp3ds::Vector2f(320.f, 29.f))
 {
-	m_textOrderAlpha.setFont(AssetManager<cpp3ds::Font>::get("fonts/fontawesome.ttf"));
-	m_textOrderAlpha.setString(L"hello \uf15d");
-//	m_textOrderAlpha.setString(L"\uf15e");
-	m_textOrderAlpha.setFillColor(cpp3ds::Color::White);
-	m_textOrderAlpha.setOutlineColor(cpp3ds::Color::Black);
-	m_textOrderAlpha.setOutlineThickness(2.f);
-	m_textOrderAlpha.setCharacterSize(16);
-	m_textOrderAlpha.setPosition(200.f, 2.f);
+	m_tabs.setBackgroundColor(cpp3ds::Color(200, 200, 200, 255));
+	m_tabs.setTabBackgroundActiveColor(cpp3ds::Color::White);
+	m_tabs.setTabBackgroundOutlineColor(cpp3ds::Color(150, 150, 150, 255));
+	m_tabs.setTabBackgroundOutlineActiveColor(cpp3ds::Color(100, 100, 100, 255));
+	m_tabs.setPadding(cpp3ds::Vector2f(8.f, 6.f));
+	m_tabs.setTabSpacing(10.f);
+	m_tabs.setTabHeight(23.f);
+	m_tabs.addTab("App Info");
+	m_tabs.addTab("Downloads");
+	m_tabs.setSelectedIndex(0);
 
-	m_textDownload = m_textOrderAlpha;
+	m_textDownload.setFillColor(cpp3ds::Color::White);
+	m_textDownload.setOutlineColor(cpp3ds::Color(0, 0, 0, 200));
+	m_textDownload.setOutlineThickness(2.f);
+	m_textDownload.setFont(AssetManager<cpp3ds::Font>::get("fonts/fontawesome.ttf"));
 	m_textDownload.setString(L"\uf019");
-//	m_textDownload.setString(L"\uf1f8");
 	m_textDownload.setCharacterSize(30);
 	m_textDownload.setPosition(67.f, 93.f);
-
-	TweenEngine::Tween::to(m_textDownload, util3ds::TweenText::OUTLINE_COLOR_RGB, 0.3f)
-			.target(100, 100, 100)
-			.repeatYoyo(-1, 0.f)
-			.start(m_tweenManager);
+	m_textDelete = m_textDownload;
+	m_textDelete.setString(L"\uf1f8");
+	m_textDelete.setPosition(70.f, 90.f);
+	m_textExecute = m_textDownload;
+	m_textExecute.setString(L"\uf01d");
+	m_textExecute.setPosition(5.f, 90.f);
 
 	m_arrowLeft.setFont(AssetManager<cpp3ds::Font>::get("fonts/fontawesome.ttf"));
 	m_arrowLeft.setCharacterSize(24);
@@ -78,10 +86,19 @@ BrowseState::BrowseState(StateStack& stack, Context& context)
 	m_textDescription.setCharacterSize(13);
 	m_textDescription.setFillColor(cpp3ds::Color(100, 100, 100, 255));
 
+	m_textAuthor.setCharacterSize(11);
+	m_textAuthor.setFillColor(cpp3ds::Color(100, 100, 100, 255));
+	m_textAuthor.setPosition(4.f, 130.f);
+
+	m_textVersion.setCharacterSize(13);
+	m_textVersion.setFillColor(cpp3ds::Color::White);
+	m_textVersion.setOutlineColor(cpp3ds::Color(0, 0, 0, 150));
+	m_textVersion.setOutlineThickness(1.f);
+	m_textVersion.setPosition(5.f, 30.f);
+
 	m_fadeShape.setTexture(&AssetManager<cpp3ds::Texture>::get("images/fade.png"));
 	m_fadeShape.setSize(cpp3ds::Vector2f(250.f, 8.f));
 	m_fadeShape.setOrigin(m_fadeShape.getSize());
-//	m_fadeShape.setFillColor(cpp3ds::Color::Black);
 	m_fadeShape.setRotation(180.f);
 	m_fadeShape.setPosition(102.f, 46.f);
 
@@ -92,6 +109,7 @@ BrowseState::BrowseState(StateStack& stack, Context& context)
 	m_descriptionView.setViewport(cpp3ds::FloatRect(0.f, 46.f / 240.f, 1.f, 120.f / 240.f));
 
 	setCurrentApp(m_appList.getSelected());
+	setMode(AppInfo);
 }
 
 void BrowseState::renderTopScreen(cpp3ds::Window& window)
@@ -106,37 +124,48 @@ void BrowseState::renderTopScreen(cpp3ds::Window& window)
 
 void BrowseState::renderBottomScreen(cpp3ds::Window& window)
 {
-	if (m_currentApp)
+	if (m_mode == AppInfo)
 	{
-		window.draw(m_screenshotsBackground);
-		if (m_screenshots.empty())
-			window.draw(m_textScreenshotsEmpty);
-
-		window.draw(m_icon);
-		window.draw(m_textTitle);
-
-		cpp3ds::View defaultView = window.getView();
-		window.setView(m_descriptionView);
-		window.draw(m_textDescription);
-		window.setView(defaultView);
-		window.draw(m_fadeShape);
-
-		if (m_currentApp->isInstalled())
+		if (m_currentApp)
 		{
+			window.draw(m_screenshotsBackground);
+			if (m_screenshots.empty())
+				window.draw(m_textScreenshotsEmpty);
 
-		}
-		else
-		{
-			window.draw(m_textDownload);
-		}
+			window.draw(m_icon);
+			window.draw(m_textTitle);
 
-		for (auto& screenshot : m_screenshots)
-		{
-			window.draw(*screenshot);
+			cpp3ds::View defaultView = window.getView();
+			window.setView(m_descriptionView);
+			window.draw(m_textDescription);
+			window.setView(defaultView);
+			window.draw(m_fadeShape);
+
+			window.draw(m_textAuthor);
+			window.draw(m_textVersion);
+
+			if (m_currentApp->isInstalled())
+			{
+				window.draw(m_textExecute);
+				window.draw(m_textDelete);
+			}
+			else
+			{
+				window.draw(m_textDownload);
+			}
+
+			for (auto& screenshot : m_screenshots)
+			{
+				window.draw(*screenshot);
+			}
 		}
 	}
+	else if (m_mode == Downloads)
+	{
+		window.draw(m_downloads);
+	}
 
-	window.draw(m_textOrderAlpha);
+	window.draw(m_tabs);
 
 	if (m_currentScreenshot)
 	{
@@ -151,11 +180,33 @@ void BrowseState::renderBottomScreen(cpp3ds::Window& window)
 
 bool BrowseState::update(float delta)
 {
+	static size_t activeDownloads;
+
 	m_textDescription.move(0.f, m_descriptionVelocity * delta);
 	if (m_textDescription.getPosition().y < 49.f - m_textDescription.getLocalBounds().height + 110.f)
 		m_textDescription.setPosition(102.f, 49.f - m_textDescription.getLocalBounds().height + 110.f);
 	if (m_textDescription.getPosition().y > 49.f)
 		m_textDescription.setPosition(102.f, 49.f);
+
+	if (m_mode == AppInfo)
+	{
+		if (!m_downloads.isDownloading(m_currentApp) && !m_downloads.isInstalling(m_currentApp))
+		{
+			m_textDownload.setFillColor(cpp3ds::Color::White);
+		}
+	}
+
+	if (activeDownloads != m_downloads.getActiveCount())
+	{
+		activeDownloads = m_downloads.getActiveCount();
+		if (activeDownloads == 0)
+			m_tabs.getTab(1).setCaption("Downloads");
+		else
+			m_tabs.getTab(1).setCaption(_("Downloads (%d)", m_downloads.getActiveCount()));
+	}
+
+
+	m_downloads.update(delta);
 	m_tweenManager.update(delta);
 	return true;
 }
@@ -212,16 +263,8 @@ bool BrowseState::processEvent(const cpp3ds::Event& event)
 				requestStackClear();
 				return true;
 			case cpp3ds::Keyboard::A: {
-//				m_appList.setSelectedIndex(6);
-//				AppItem* item = m_appList.getSelected();
-//				setCurrentApp(item);
-//				m_downloads.addDownload(item);
-//				m_loadThread.launch();
-				loadApp();
-				break;
-			}
-			case cpp3ds::Keyboard::B: {
-				Notification::spawn("Download completed test."); break;
+				m_loadThread.launch();
+//				loadApp();
 				break;
 			}
 			case cpp3ds::Keyboard::DPadUp:
@@ -235,11 +278,15 @@ bool BrowseState::processEvent(const cpp3ds::Event& event)
 				setItemIndex(index + 1);
 				break;
 			case cpp3ds::Keyboard::DPadLeft:
+#if EMULATION
 			case cpp3ds::Keyboard::X:
+#endif
 				setItemIndex(index - 4);
 				break;
 			case cpp3ds::Keyboard::DPadRight:
+#ifdef EMULATION
 			case cpp3ds::Keyboard::Y:
+#endif
 				setItemIndex(index + 4);
 				break;
 			case cpp3ds::Keyboard::L:
@@ -254,33 +301,71 @@ bool BrowseState::processEvent(const cpp3ds::Event& event)
 	}
 	else if (event.type == cpp3ds::Event::TouchBegan)
 	{
-		int i = 0;
-		for (auto& screenshot : m_screenshots)
+		if (m_mode == AppInfo)
 		{
-			i++;
-			if (screenshot->getGlobalBounds().contains(event.touch.x, event.touch.y))
+			int i = 0;
+			for (auto& screenshot : m_screenshots)
 			{
-				setCurrentScreenshot(i);
+				i++;
+				if (screenshot->getGlobalBounds().contains(event.touch.x, event.touch.y))
+				{
+					setCurrentScreenshot(i);
+				}
 			}
-		}
 
-		if (m_textDownload.getGlobalBounds().contains(event.touch.x, event.touch.y))
-		{
-//			AppItem* item = m_appList.getSelected();
-//			m_downloads.addDownload(m_currentApp);
-			if (true)
+			if (m_currentApp->isInstalled())
 			{
-				TweenEngine::Tween::to(m_textDownload, util3ds::TweenText::FILL_COLOR_RGB, 0.5f)
-						.target(230, 20, 20)
-						.start(m_tweenManager);
+				if (m_textExecute.getGlobalBounds().contains(event.touch.x, event.touch.y))
+				{
+					TweenEngine::Tween::to(m_textExecute, util3ds::TweenText::OUTLINE_COLOR_RGB, 0.5f)
+							.target(0, 180, 0)
+							.repeatYoyo(1, 0)
+							.setCallback(TweenEngine::TweenCallback::COMPLETE, [this](TweenEngine::BaseTween* source) {
+								std::string filename = _("sdmc:/3ds/%s/%s.3dsx", m_currentApp->getDirectory().c_str(), m_currentApp->getDirectory().c_str());
+								if (pathExists(filename.c_str()))
+								{
+									bootApp(filename.substr(5).c_str(), "");
+									requestStackClear();
+								}
+							})
+							.start(m_tweenManager);
+				}
+				else if (m_textDelete.getGlobalBounds().contains(event.touch.x, event.touch.y))
+				{
+					Installer installer(m_currentApp, "");
+					installer.uninstall();
+					m_textDownload.setFillColor(cpp3ds::Color::White);
+				}
 			}
 			else
 			{
-				TweenEngine::Tween::to(m_textDownload, util3ds::TweenText::FILL_COLOR_RGB, 0.5f)
-						.target(0, 0, 0)
-						.start(m_tweenManager);
+				if (m_textDownload.getGlobalBounds().contains(event.touch.x, event.touch.y))
+				{
+					if (m_downloads.isDownloading(m_currentApp) || m_downloads.isInstalling(m_currentApp))
+					{
+						m_downloads.cancelDownload(m_currentApp);
+						TweenEngine::Tween::to(m_textDownload, util3ds::TweenText::FILL_COLOR_RGB, 0.5f)
+								.target(255, 255, 255)
+								.start(m_tweenManager);
+					}
+					else
+					{
+						m_downloads.addDownload(m_currentApp);
+						m_tabs.getTab(1).setCaption(_("Downloads (%d)", m_downloads.getCount()));
+						TweenEngine::Tween::to(m_textDownload, util3ds::TweenText::FILL_COLOR_RGB, 0.5f)
+								.target(230, 20, 20)
+								.start(m_tweenManager);
+					}
+				}
 			}
 		}
+		else if (m_mode == Downloads)
+		{
+			m_downloads.processEvent(event);
+		}
+
+		m_tabs.processEvent(event);
+		m_mode = (m_tabs.getSelectedIndex() == 1) ? Downloads : AppInfo;
 	}
 	else if (event.type == cpp3ds::Event::JoystickMoved)
 	{
@@ -298,17 +383,19 @@ void BrowseState::setItemIndex(int index)
 	else if (index >= m_appList.getCount())
 		index = m_appList.getCount() - 1;
 
-	m_appList.setSelectedIndex(index);
+	float extra = std::abs(m_appList.getSelectedIndex() - index) == 8.f ? 2.f : 1.f;
 
-	float pos = -200.f * (index / 4);
+	float pos = -200.f * extra * (index / 4);
 	if (pos > m_appListPositionX)
 		m_appListPositionX = pos;
 	else if (pos <= m_appListPositionX - 400.f)
-		m_appListPositionX = pos + 200.f;
+		m_appListPositionX = pos + 200.f * extra;
 
 	TweenEngine::Tween::to(m_appList, AppList::POSITION_X, 0.3f)
 			.target(m_appListPositionX)
 			.start(m_tweenManager);
+
+	m_appList.setSelectedIndex(index);
 }
 
 void BrowseState::setCurrentApp(AppItem *app)
@@ -320,6 +407,8 @@ void BrowseState::setCurrentApp(AppItem *app)
 		m_icon.setTexture(*app->getIcon(), true);
 		m_textTitle.setString(app->getTitle());
 		m_textTitle.setOrigin(m_textTitle.getLocalBounds().width / 2.f, 0.f);
+		m_textAuthor.setString(app->getAuthor());
+		m_textVersion.setString(app->getVersion());
 
 		// Calculate word-wrapping for description
 		std::stringstream ss(app->getLongDescription());
@@ -327,7 +416,7 @@ void BrowseState::setCurrentApp(AppItem *app)
 		std::string word;
 		cpp3ds::Text tmpText = m_textDescription;
 		float posX = 0;
-		while (ss >> word)
+		while (std::getline(ss, word, ' '))
 		{
 			tmpText.setString(word + " ");
 			if (posX > 218.f - tmpText.getLocalBounds().width)
@@ -341,7 +430,6 @@ void BrowseState::setCurrentApp(AppItem *app)
 
 		m_textDescription.setString(description.str());
 		m_textDescription.setPosition(102.f, 49.f);
-//		m_textDescription.setString(app->getLongDescription());
 
 		m_textDownload.setFillColor(cpp3ds::Color::White);
 	}
@@ -350,11 +438,7 @@ void BrowseState::setCurrentApp(AppItem *app)
 void BrowseState::loadApp()
 {
 	AppItem* item = m_appList.getSelected();
-
-//	setCurrentApp(nullptr);
-//	m_screenshots.clear();
-//	m_screenshotTextures.clear();
-
+	m_tabs.setSelectedIndex(0);
 
 	if (item->getScreenshots().empty())
 	{
@@ -367,7 +451,7 @@ void BrowseState::loadApp()
 
 		size_t oldCount = m_currentApp->getScreenshots().size();
 		std::vector<std::unique_ptr<util3ds::TweenSprite>> newSprites;
-		float startX = (320.f - 61.f * item->getScreenshots().size()) / 2.f;
+		float startX = std::round((320.f - 61.f * item->getScreenshots().size()) / 2.f);
 
 		int i = 0;
 		for (auto& url : item->getScreenshots())
@@ -376,8 +460,7 @@ void BrowseState::loadApp()
 			dest << "sdmc:/3ds/BrewMan/cache/" << item->getDirectory() << "_screenshot" << i << ".bin";
 
 			// Check if screenshot is already in cache
-			struct stat buffer;
-			if (stat(cpp3ds::FileSystem::getFilePath(dest.str()).c_str(), &buffer))
+			if (!pathExists(dest.str().c_str()))
 			{
 				Download download(url, dest.str());
 				std::cout << url << " - " << dest.str() << std::endl;
@@ -394,7 +477,6 @@ void BrowseState::loadApp()
 
 			newSprites.emplace_back(std::move(sprite));
 			m_screenshotTextures.emplace_back(std::move(texture));
-//			m_screenshots.emplace_back(std::move(sprite));
 			++i;
 		}
 
@@ -409,8 +491,9 @@ void BrowseState::loadApp()
 
 		requestStackPop();
 	}
-//	std::cout << "thread count: " << m_screenshots.size() << std::endl;
+
 	setCurrentApp(item);
+	setMode(AppInfo);
 }
 
 
@@ -503,6 +586,21 @@ void BrowseState::setCurrentScreenshot(int screenshotIndex)
 	}
 
 	m_currentScreenshot = screenshotIndex;
+}
+
+
+void BrowseState::setMode(BrowseState::Mode mode)
+{
+	if (mode == AppInfo)
+	{
+		//
+	}
+	else if (mode == Downloads)
+	{
+
+	}
+
+	m_mode = mode;
 }
 
 } // namespace BrewMan

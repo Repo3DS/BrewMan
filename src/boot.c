@@ -1,10 +1,18 @@
-#ifndef EMULATION
-#include <3ds.h>
-
+#include "boot.h"
 #include <stdio.h>
 #include <string.h>
 
-#include "boot.h"
+#ifdef EMULATION
+int bootApp(const char *executablePath, const char *arg)
+{
+	// Emulator does nothing for booting now
+	printf("Booting %s ... with arg: \"%s\"\n", executablePath, arg);
+	return 0;
+}
+#else
+
+#include <3ds.h>
+
 //#include "netloader.h"
 //#include "filesystem.h"
 
@@ -220,4 +228,4 @@ int bootApp(const char* executablePath, const char* arg)
 	return 0;
 }
 
-#endif // !EMULATION
+#endif // EMULATION

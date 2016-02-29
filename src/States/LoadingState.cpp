@@ -47,15 +47,6 @@ bool LoadingState::update(float delta)
 
 bool LoadingState::processEvent(const cpp3ds::Event& event)
 {
-	// If any key is pressed, trigger the next screen
-	if (event.type == cpp3ds::Event::KeyPressed)
-	{
-		if (event.key.code == cpp3ds::Keyboard::Select) {
-			requestStackClear();
-			return false;
-		}
-	}
-
 	return false;
 }
 

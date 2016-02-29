@@ -20,9 +20,9 @@ BrewMan::BrewMan()
 	m_stateStack.registerState<SyncState>(States::Sync);
 	m_stateStack.registerState<BrowseState>(States::Browse);
 //	m_stateStack.pushState(States::Browse);
+	m_stateStack.pushState(States::Loading);
 	m_stateStack.pushState(States::Sync);
 	m_stateStack.pushState(States::Title);
-	m_stateStack.pushState(States::Loading);
 
 	textFPS.setFillColor(cpp3ds::Color::Red);
 	textFPS.setCharacterSize(20);
@@ -42,11 +42,13 @@ void BrewMan::update(float delta)
 
 	Notification::update(delta);
 
+#ifndef NDEBUG
 	static int i;
 	if (i++ % 10 == 0) {
 		textFPS.setString(_("%.1f fps", 1.f / delta));
 		textFPS.setPosition(395 - textFPS.getGlobalBounds().width, 2.f);
 	}
+#endif
 }
 
 void BrewMan::processEvent(Event& event)
@@ -58,10 +60,12 @@ void BrewMan::renderTopScreen(Window& window)
 {
 	window.clear(Color::White);
 	m_stateStack.renderTopScreen(window);
-	window.setView(window.getDefaultView());
 	for (auto& notification : Notification::notifications)
 		window.draw(*notification);
+
+#ifndef NDEBUG
 	window.draw(textFPS);
+#endif
 }
 
 void BrewMan::renderBottomScreen(Window& window)

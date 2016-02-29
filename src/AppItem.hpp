@@ -55,9 +55,6 @@ public:
 	void setScreenshots(const std::vector<std::string> &screenshots);
 	const std::vector<std::string>& getScreenshots() const;
 
-	void setProgress(float progress);
-	float getProgress() const;
-
 	void setInstalled(bool installed);
 	bool isInstalled() const;
 
@@ -69,8 +66,6 @@ protected:
 	virtual void draw(cpp3ds::RenderTarget &target, cpp3ds::RenderStates states) const;
 
 private:
-	static cpp3ds::Texture m_backgroundTexture;
-	static cpp3ds::Texture m_backgroundSelectedTexture;
 	gui3ds::NinePatch m_background;
 
 	cpp3ds::RectangleShape m_icon;
@@ -82,7 +77,6 @@ private:
 	cpp3ds::Text m_filesizeText;
 
 	cpp3ds::Vector2f m_size;
-	float m_progress;
 
 	std::string m_title;
 	std::string m_directory;
