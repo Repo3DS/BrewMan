@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 project("brewman")
 
 set(APP_TITLE "BrewMan")
-set(APP_DESCRIPTION "Homebrew manager and installer")
+set(APP_DESCRIPTION "Homebrew browser and installer")
 set(APP_AUTHOR "Cruel")
 set(APP_ICON ${PROJECT_SOURCE_DIR}/res/app/icon.png)
 
@@ -33,11 +33,14 @@ set(SOURCE_FILES
 	${PROJECT_SOURCE_DIR}/src/AppItem.cpp
 	${PROJECT_SOURCE_DIR}/src/AppList.cpp
 	${PROJECT_SOURCE_DIR}/src/BrewMan.cpp
+	${PROJECT_SOURCE_DIR}/src/Util.cpp
 	${PROJECT_SOURCE_DIR}/src/Installer.cpp
 	${PROJECT_SOURCE_DIR}/src/Download.cpp
 	${PROJECT_SOURCE_DIR}/src/DownloadQueue.cpp
 	${PROJECT_SOURCE_DIR}/src/Notification.cpp
 	${PROJECT_SOURCE_DIR}/src/GUI/Button.cpp
+	${PROJECT_SOURCE_DIR}/src/GUI/Tab.cpp
+	${PROJECT_SOURCE_DIR}/src/GUI/TabSet.cpp
 	${PROJECT_SOURCE_DIR}/src/GUI/NinePatch.cpp
 	${PROJECT_SOURCE_DIR}/src/States/State.cpp
 	${PROJECT_SOURCE_DIR}/src/States/StateStack.cpp
